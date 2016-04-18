@@ -100,7 +100,7 @@ public class XmppServer extends AndroidpnConfig {
 						.setDefaultFactory(new Slf4JLoggerFactory());
 				pipeline.addLast("logger", new LoggingHandler(LogLevel.DEBUG));
 				
-				// 超时handler 读超时0分钟，写超时0分钟，空闲超时6分钟
+				// 超时handler 读超时0分钟，写超时0分钟，空闲超时9分钟
 				pipeline.addLast("idleHandler", new IdleStateHandler(0, 0,
 						9 * 60, TimeUnit.SECONDS));
 				

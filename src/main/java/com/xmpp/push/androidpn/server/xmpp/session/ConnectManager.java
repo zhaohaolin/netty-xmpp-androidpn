@@ -213,7 +213,8 @@ public class ConnectManager {
 	 * @param ext
 	 * 
 	 */
-	public final boolean sendMessage(String deviceid, String message, String ext) {
+	public final boolean sendMessage(String deviceid, String id,
+			String message, String ext) {
 		if (!contains(deviceid)) {
 			LOG.error(
 					"deviceid=[{}] has no channel to send message=[{}], ext=[{}].",
@@ -232,7 +233,7 @@ public class ConnectManager {
 		Channel channel = connect.getChannel();
 		
 		// convert message to xmpp protocol
-		IQ iq = IQUtils.createIQ(apiKey, message, ext);
+		IQ iq = IQUtils.createIQ(apiKey, id, message, ext);
 		if (null == iq) {
 			LOG.error("create iq failer. apiKey=[{}], message=[{}], ext=[{}]",
 					new Object[] { apiKey, message, ext });

@@ -99,119 +99,14 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg)
 			throws Exception {
-		System.out.println(msg);
-		// LOG.debug("received msg=[{}]", e.getMessage());
+		
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("received msg=[{}]", msg);
+		}
 		
 		Channel channel = ctx.channel();
 		
-		if (msg instanceof XMLEvent) {
-			final XMLEvent event = (XMLEvent) msg;
-			
-			switch (status) {
-				case CONNECT:
-					if (event.isStartElement()) {
-						final StartElement element = event.asStartElement();
-						
-						if (STREAM_NAME.equals(element.getName())) {
-							
-							// to=""
-							if (!serverName.equals(element.getAttributeByName(
-									new QName("to")).getValue())) {
-								throw new Exception("server name mismatch");
-							}
-							
-							status = Status.STARTEDTLS;
-							// status = Status.READY;
-							
-							// 返回client端
-							channel.writeAndFlush(startResp());
-							
-							// XMPP 1.0 needs stream features
-							// Channels.write(channel,
-							// ChannelBuffers.copiedBuffer(features(),
-							// CharsetUtil.UTF_8));
-							if (LOG.isDebugEnabled())
-								LOG.debug("client channel=[{}] connect ok.",
-										channel);
-						}
-					} else {
-						throw new Exception("Expected stream:stream element");
-					}
-					break;
-				
-				case STARTEDTLS:
-					
-					if (event.isStartElement()) {
-						final StartElement element = event.asStartElement();
-						
-						if (STARTTLS.equals(element.getName())) {
-							
-							status = Status.TLSCONNECT;
-							starttls = false;
-							
-							// 响应返回客户端可以继续
-							String xml = "<proceed xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>";
-							channel.writeAndFlush(xml);
-							
-							// add tls handler
-							channel.pipeline().addFirst("tls",
-									new SslHandler(sslEngine));
-							
-							if (LOG.isDebugEnabled())
-								LOG.debug("client start tls ok. channel=[{}]",
-										channel);
-							
-							// ctx.sendUpstream(e);
-							ctx.fireChannelRead(msg);
-						}
-					}
-					break;
-				
-				case TLSCONNECT:
-					if (event.isStartElement()) {
-						final StartElement element = event.asStartElement();
-						
-						if (STREAM_NAME.equals(element.getName())) {
-							if (!serverName.equals(element.getAttributeByName(
-									new QName("to")).getValue())) {
-								throw new Exception("server name mismatch");
-							}
-							
-							status = Status.READY;
-							
-							// 返回client端
-							channel.writeAndFlush(tlsNegotiated());
-							
-							if (LOG.isDebugEnabled())
-								LOG.debug(
-										"client tls connect ok. channel=[{}]",
-										channel);
-						}
-					}
-					break;
-				
-				case AUTHENTICATE:
-				case READY:
-					
-					if (LOG.isDebugEnabled())
-						LOG.debug("client request msg=[{}] by channel=[{}]",
-								msg, channel);
-					
-					if (event.isEndElement()) {
-						final EndElement element = event.asEndElement();
-						
-						if (STREAM_NAME.equals(element.getName())) {
-							// Channels.disconnect(ctx.getChannel());
-							return;
-						}
-					}
-					break;
-				case DISCONNECTED:
-					throw new Exception("received DISCONNECTED");
-				default:
-					break;
-			}
-		} else if (msg instanceof XMLElement) {
+		if (msg instanceof XMLElement) {
 			final XMLElement element = (XMLElement) msg;
 			
 			switch (status) {
@@ -254,9 +149,10 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 						channel.pipeline().addFirst("tls",
 								new SslHandler(sslEngine));
 						
-						if (LOG.isDebugEnabled())
+						if (LOG.isDebugEnabled()) {
 							LOG.debug("client start tls ok. channel=[{}]",
 									channel);
+						}
 						
 						// ctx.sendUpstream(e);
 						ctx.fireChannelRead(msg);
@@ -265,9 +161,10 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 					
 					// 如果不是tls与下面的连接情况一样
 					{
-						if (LOG.isDebugEnabled())
+						if (LOG.isDebugEnabled()) {
 							LOG.debug("client request msg by channel=[{}]",
 									channel);
+						}
 						
 						status = Status.READY;
 						
@@ -289,17 +186,19 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 						// 返回client端
 						channel.writeAndFlush(tlsNegotiated());
 						
-						if (LOG.isDebugEnabled())
+						if (LOG.isDebugEnabled()) {
 							LOG.debug("client tls connect ok. channel=[{}]",
 									channel);
+						}
 					}
 					break;
 				
 				// 4.当客户端采用tls后，正常的iq请求
 				case READY:
 					
-					if (LOG.isDebugEnabled())
+					if (LOG.isDebugEnabled()) {
 						LOG.debug("client request msg by channel=[{}]", channel);
+					}
 					
 					final Packet stanza = Packet.fromElement(element);
 					if (stanza == null)

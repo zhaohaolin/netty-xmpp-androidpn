@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.hikvision.push</groupId>
+	<groupId>com.xmpp.push</groupId>
 	<artifactId>netty-xmpp-androidpn</artifactId>
 	<version>1.0.7-SNAPSHOT</version>
 	<name />
@@ -64,22 +64,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<distributionManagement>
-
-		<!-- release -->
-		<repository>
-			<id>civil-release</id>
-			<name>civil-release</name>
-			<url>http://maven.hikvision.com.cn/nexus/content/repositories/civil-release/</url>
-		</repository>
-
-		<!-- snapshot -->
-		<snapshotRepository>
-			<id>civil-snapshot</id>
-			<name>civil-snapshot</name>
-			<url>http://maven.hikvision.com.cn/nexus/content/repositories/civil-snapshot/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 </project>

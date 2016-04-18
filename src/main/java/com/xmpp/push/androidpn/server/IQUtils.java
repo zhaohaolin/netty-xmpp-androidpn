@@ -26,7 +26,8 @@ public abstract class IQUtils implements XMPPNamespaces {
 	 * 生成XMPP格式的推送消息
 	 * </p>
 	 */
-	public final static IQ createIQ(String apiKey, String message, String ext) {
+	public final static IQ createIQ(String apiKey, String id, String message,
+			String ext) {
 		IQ iq = new IQ(IQ.Type.set);
 		iq.addExtension("notification", NOTIFICATION);
 		XMLElement notifycation = iq.getExtension("notification", NOTIFICATION);
@@ -34,8 +35,6 @@ public abstract class IQUtils implements XMPPNamespaces {
 			LOG.error("create notification failer.");
 			return null;
 		}
-		
-		String id = Long.toHexString(Double.doubleToLongBits(Math.random()));
 		
 		notifycation.setChildText("id", id);
 		notifycation.setChildText("apiKey", apiKey);

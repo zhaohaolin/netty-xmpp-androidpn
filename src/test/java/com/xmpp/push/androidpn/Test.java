@@ -7,7 +7,6 @@ package com.xmpp.push.androidpn;
 
 import io.netty.channel.Channel;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,8 +72,13 @@ public class Test {
 			
 			Channel channel = connectManager.getConnectByChannelId(channelId)
 					.getChannel();
-			IQUtils.send(channel,
-					IQUtils.createIQ(apiKey, "我是消息内容", "i am ext content."));
+			
+			String content = "我是消息内容";
+			String ext = "i am ext content.";
+			String id = Long
+					.toHexString(Double.doubleToLongBits(Math.random()));
+			
+			IQUtils.send(channel, IQUtils.createIQ(apiKey, id, content, ext));
 			System.out.println("向channel=" + channel + ", 推送消息完成.");
 		}
 	}
