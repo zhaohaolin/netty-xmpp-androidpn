@@ -52,8 +52,8 @@ public class XMLFrameDecoder extends ByteToMessageDecoder implements
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf buffer,
 			List<Object> out) throws Exception {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("decode buffer=[{}], channel=[{}]", buffer, ctx.channel());
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("decode buffer=[{}], channel=[{}]", buffer, ctx.channel());
 		}
 		
 		if (buffer.isReadable()) {

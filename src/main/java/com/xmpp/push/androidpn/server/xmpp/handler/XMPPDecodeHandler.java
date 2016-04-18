@@ -25,9 +25,6 @@ import io.netty.handler.ssl.SslHandler;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.xml.namespace.QName;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,6 +204,7 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 					// 弹出到上一层的handler继续处理
 					ctx.fireChannelRead(stanza);
 					break;
+				
 				default:
 					throw new Exception("unexpected handleElement");
 			}

@@ -57,8 +57,8 @@ public class XMLElementDecoder extends MessageToMessageDecoder<Object>
 	protected void decode(ChannelHandlerContext ctx, Object msg,
 			List<Object> out) throws Exception {
 		
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("receive msg=[{}], channel=[{}]",
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("receive msg=[{}], channel=[{}]",
 					new Object[] { msg, ctx.channel() });
 		}
 		
