@@ -56,7 +56,7 @@ public class Test {
 		
 		// SessionManager.getInstance().start();
 		
-		server.start();
+		server.serverStart();
 		
 		// test push
 		final ConnectManager connectManager = ConnectManager.getInstance();

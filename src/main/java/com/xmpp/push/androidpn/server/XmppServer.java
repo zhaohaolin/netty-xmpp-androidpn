@@ -18,8 +18,6 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -63,7 +61,7 @@ public class XmppServer extends AndroidpnConfig {
 	private EventLoopGroup					workerGroup		= null;
 	private Class<? extends ServerChannel>	channelClass	= null;
 	
-	public void start() throws Exception {
+	public synchronized void serverStart() throws Exception {
 		
 		// convert config to ssl config
 		sslConfig = new SSLConfig();
@@ -96,8 +94,8 @@ public class XmppServer extends AndroidpnConfig {
 				// -------------------
 				// 靠近传输层
 				// -------------------
-				InternalLoggerFactory
-						.setDefaultFactory(new Slf4JLoggerFactory());
+				// InternalLoggerFactory
+				// .setDefaultFactory(new Slf4JLoggerFactory());
 				pipeline.addLast("logger", new LoggingHandler(LogLevel.DEBUG));
 				
 				// 超时handler 读超时0分钟，写超时0分钟，空闲超时9分钟
@@ -169,6 +167,13 @@ public class XmppServer extends AndroidpnConfig {
 			}
 		} while (!binded);
 		
+		// Bind a shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				serverStop();
+			}
+		});
 	}
 	
 	protected void initGroups() {
@@ -183,13 +188,19 @@ public class XmppServer extends AndroidpnConfig {
 		}
 	}
 	
-	public void stop() {
+	public synchronized void serverStop() {
 		if (null != bootstrap) {
 			this.bootstrap = null;
-			
+		}
+		
+		if (null != bossGroup) {
 			bossGroup.shutdownGracefully();
+		}
+		
+		if (null != workerGroup) {
 			workerGroup.shutdownGracefully();
 		}
+		
 	}
 	
 	public int getMaxRetryCount() {
