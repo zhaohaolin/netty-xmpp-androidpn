@@ -71,7 +71,15 @@ public class XmppServer extends AndroidpnConfig {
 		bootstrap = new ServerBootstrap();
 		
 		// init groups and channelClass
-		initGroups();
+		if (isUseLinuxNativeEpoll()) {
+			bossGroup = new EpollEventLoopGroup(getBossThreads());
+			workerGroup = new EpollEventLoopGroup(getWorkerThreads());
+			channelClass = EpollServerSocketChannel.class;
+		} else {
+			bossGroup = new NioEventLoopGroup(getBossThreads());
+			workerGroup = new NioEventLoopGroup(getWorkerThreads());
+			channelClass = NioServerSocketChannel.class;
+		}
 		bootstrap.group(bossGroup, workerGroup);
 		bootstrap.channel(channelClass);
 		
@@ -80,7 +88,11 @@ public class XmppServer extends AndroidpnConfig {
 		bootstrap.option(ChannelOption.TCP_NODELAY, true);
 		bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
 		
+		bootstrap.option(ChannelOption.ALLOCATOR,
+				PooledByteBufAllocator.DEFAULT);
+		
 		// child option
+		bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 		bootstrap.childOption(ChannelOption.ALLOCATOR,
 				PooledByteBufAllocator.DEFAULT);
 		
@@ -174,18 +186,6 @@ public class XmppServer extends AndroidpnConfig {
 				serverStop();
 			}
 		});
-	}
-	
-	protected void initGroups() {
-		if (isUseLinuxNativeEpoll()) {
-			bossGroup = new EpollEventLoopGroup(getBossThreads());
-			workerGroup = new EpollEventLoopGroup(getWorkerThreads());
-			channelClass = EpollServerSocketChannel.class;
-		} else {
-			bossGroup = new NioEventLoopGroup(getBossThreads());
-			workerGroup = new NioEventLoopGroup(getWorkerThreads());
-			channelClass = NioServerSocketChannel.class;
-		}
 	}
 	
 	public synchronized void serverStop() {
