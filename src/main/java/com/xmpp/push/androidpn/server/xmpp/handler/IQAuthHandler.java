@@ -144,7 +144,7 @@ public class IQAuthHandler extends AbstractIQHandler implements XMPPNamespaces {
 					throw new UnauthenticatedException();
 				}
 				
-				System.out.println("username=" + username);
+				//System.out.println("username=" + username);
 				
 				// Set the session authenticated successfully
 				connection = new Connection(channel.id().asLongText(), channel,
