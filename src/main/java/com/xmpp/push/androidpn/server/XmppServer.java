@@ -16,6 +16,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 
@@ -72,12 +73,16 @@ public class XmppServer extends AndroidpnConfig {
 		
 		// init groups and channelClass
 		if (isUseLinuxNativeEpoll()) {
-			bossGroup = new EpollEventLoopGroup(getBossThreads());
-			workerGroup = new EpollEventLoopGroup(getWorkerThreads());
+			bossGroup = new EpollEventLoopGroup(getBossThreads(),
+					new DefaultThreadFactory("TCPServerBoss"));
+			workerGroup = new EpollEventLoopGroup(getWorkerThreads(),
+					new DefaultThreadFactory("TCPServerWorker"));
 			channelClass = EpollServerSocketChannel.class;
 		} else {
-			bossGroup = new NioEventLoopGroup(getBossThreads());
-			workerGroup = new NioEventLoopGroup(getWorkerThreads());
+			bossGroup = new NioEventLoopGroup(getBossThreads(),
+					new DefaultThreadFactory("TCPServerBoss"));
+			workerGroup = new NioEventLoopGroup(getWorkerThreads(),
+					new DefaultThreadFactory("TCPServerWorker"));
 			channelClass = NioServerSocketChannel.class;
 		}
 		bootstrap.group(bossGroup, workerGroup);
