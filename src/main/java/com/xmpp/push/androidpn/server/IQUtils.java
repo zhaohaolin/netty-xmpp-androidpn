@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.xmpp.push.androidpn.server.xmpp.XMPPNamespaces;
 import com.xmpp.push.androidpn.server.xmpp.stanza.IQ;
-import com.xmpp.push.androidpn.server.xmpp.stanza.Packet;
 import com.xmpp.push.androidpn.server.xmpp.stanza.IQ.Type;
+import com.xmpp.push.androidpn.server.xmpp.stanza.Packet;
 import com.xmpp.push.androidpn.server.xmpp.xml.XMLElement;
 
 /**
@@ -27,19 +27,20 @@ public abstract class IQUtils implements XMPPNamespaces {
 	 * </p>
 	 */
 	public final static IQ createIQ(String apiKey, String id, String message,
-			String ext) {
+			String ext, String timestamp) {
 		IQ iq = new IQ(IQ.Type.set);
 		iq.addExtension("notification", NOTIFICATION);
-		XMLElement notifycation = iq.getExtension("notification", NOTIFICATION);
-		if (null == notifycation) {
+		XMLElement notification = iq.getExtension("notification", NOTIFICATION);
+		if (null == notification) {
 			LOG.error("create notification failer.");
 			return null;
 		}
 		
-		notifycation.setChildText("id", id);
-		notifycation.setChildText("apiKey", apiKey);
-		notifycation.setChildText("message", message);
-		notifycation.setChildText("ext", ext);
+		notification.setChildText("id", id);
+		notification.setChildText("t", timestamp);
+		notification.setChildText("apiKey", apiKey);
+		notification.setChildText("message", message);
+		notification.setChildText("ext", ext);
 		
 		return iq;
 	}

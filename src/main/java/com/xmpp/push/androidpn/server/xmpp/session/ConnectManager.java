@@ -45,26 +45,18 @@ public class ConnectManager {
 	
 	private static final Logger				LOG			= LoggerFactory
 																.getLogger(ConnectManager.class);
-	
-	private String							resourceName;
-	
 	private static final ConnectManager		INSTANCE	= new ConnectManager();
 	
+	private String							resourceName;
 	private String							serverName;
-	
 	private String							apiKey;
-	
 	private Map<String, Connection>			connectMap	= new ConcurrentHashMap<String, Connection>();
-	
 	private Map<String, String>				channelMap	= new ConcurrentHashMap<String, String>();
-	
 	private ExecutorService					exec		= Executors
 																.newSingleThreadExecutor();
 	
 	private AtomicLong						balance		= new AtomicLong(0);
-	
 	private BlockingQueue<MobileDevStatus>	queue		= new LinkedBlockingQueue<MobileDevStatus>();
-	
 	private MobileDevStatusListener			mobileDevStatusListener;
 	
 	private ConnectManager() {
@@ -107,12 +99,11 @@ public class ConnectManager {
 		return INSTANCE;
 	}
 	
-	public void registMobileDevStatusListener(
-			MobileDevStatusListener mobileDevStatusListener) {
-		this.mobileDevStatusListener = mobileDevStatusListener;
+	public void registMobileDevStatusListener(MobileDevStatusListener listener) {
+		this.mobileDevStatusListener = listener;
 	}
 	
-	public void start() {
+	public final synchronized void start() {
 		// 手机在线状态修改任务
 		exec.execute(new Runnable() {
 			
@@ -122,8 +113,8 @@ public class ConnectManager {
 				try {
 					while (!Thread.currentThread().isInterrupted()) {
 						MobileDevStatus mobileDevStatus = queue.take();
-						String deviceid = mobileDevStatus.getDeviceid();
-						SessionStatus type = mobileDevStatus.getType();
+						String deviceid = mobileDevStatus.getClientId();
+						SessionStatus type = mobileDevStatus.getStatus();
 						if (mobileDevStatusListener != null) {
 							mobileDevStatusListener
 									.changeStatus(deviceid, type);
@@ -138,8 +129,10 @@ public class ConnectManager {
 		});
 	}
 	
-	public void stop() {
-		exec.shutdownNow();
+	public final synchronized void stop() {
+		if (null != exec) {
+			exec.shutdownNow();
+		}
 	}
 	
 	public final void addConnect(final Connection connect) {
@@ -147,10 +140,10 @@ public class ConnectManager {
 			throw new IllegalStateException("Server not initialized");
 		}
 		
-		String deviceId = connect.getDeviceid();
+		String clientId = connect.getDeviceid();
 		
 		// WARN 这儿要检查是否有连接存在，如果存在就先断开以前的连接，以保证客户端只能有一个连接
-		Connection exist = connectMap.get(deviceId);
+		Connection exist = connectMap.get(clientId);
 		if (null != exist) {
 			LOG.warn(
 					"deviceId=[{}] connect exist for connection=[{}]  deivceId=[{}] will closed.",
@@ -169,17 +162,17 @@ public class ConnectManager {
 		}
 		
 		// 添加连接到hashmap中
-		connectMap.put(deviceId, connect);
+		connectMap.put(clientId, connect);
 		
 		if (LOG.isInfoEnabled()) {
-			LOG.info("deviceId=[{}], connect=[{}], add connectMap", deviceId,
+			LOG.info("deviceId=[{}], connect=[{}], add connectMap", clientId,
 					connect);
 		}
 		
-		channelMap.put(connect.getId(), deviceId);
+		channelMap.put(connect.getId(), clientId);
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("channelId=[{}] deviceId=[{}] put to channelMap.",
-					connect.getId(), deviceId);
+					connect.getId(), clientId);
 		}
 		
 		// 修改手机上线状态
@@ -208,32 +201,32 @@ public class ConnectManager {
 	 * 
 	 * 根据deviceid直接发送消息到客户端手机上
 	 * 
-	 * @param deviceid
+	 * @param clientId
 	 * @param message
 	 * @param ext
 	 * 
 	 */
-	public final boolean sendMessage(String deviceid, String id,
-			String message, String ext) {
-		if (!contains(deviceid)) {
+	public final boolean sendMessage(String clientId, String id,
+			String message, String ext, String timestamp) {
+		if (!contains(clientId)) {
 			LOG.error(
 					"deviceid=[{}] has no channel to send message=[{}], ext=[{}].",
-					new Object[] { deviceid, message, ext });
+					new Object[] { clientId, message, ext });
 			return false;
 		}
 		
-		Connection connect = connectMap.get(deviceid);
+		Connection connect = connectMap.get(clientId);
 		if (null == connect) {
 			LOG.error(
 					"deviceid=[{}] has no channel to send message=[{}], ext=[{}].",
-					new Object[] { deviceid, message, ext });
+					new Object[] { clientId, message, ext });
 			return false;
 		}
 		
 		Channel channel = connect.getChannel();
 		
 		// convert message to xmpp protocol
-		IQ iq = IQUtils.createIQ(apiKey, id, message, ext);
+		IQ iq = IQUtils.createIQ(apiKey, id, message, ext, timestamp);
 		if (null == iq) {
 			LOG.error("create iq failer. apiKey=[{}], message=[{}], ext=[{}]",
 					new Object[] { apiKey, message, ext });
@@ -291,17 +284,17 @@ public class ConnectManager {
 	 * 
 	 * 根据deviceid删除客户端连接
 	 * 
-	 * @param deviceid
+	 * @param clientId
 	 * @return
 	 */
 	public final boolean removeConnect(final String channelId,
-			final String deviceid) {
+			final String clientId) {
 		delBalance();
 		
-		Connection connect = connectMap.get(deviceid);
+		Connection connect = connectMap.get(clientId);
 		if (null == connect) {
 			LOG.warn("deviceId=[{}] channelId=[{}] get connect is null.",
-					deviceid, channelId);
+					clientId, channelId);
 			return false;
 		}
 		
@@ -309,23 +302,23 @@ public class ConnectManager {
 		if (channelId != connect.getChannel().id().asLongText()) {
 			LOG.warn(
 					"deviceId=[{}] channelId=[{}] is not this channelId=[{}].",
-					deviceid, channelId, connect.getChannel().id());
+					clientId, channelId, connect.getChannel().id());
 			return false;
 		}
 		
-		connectMap.remove(deviceid);
+		connectMap.remove(clientId);
 		
 		if (LOG.isInfoEnabled())
-			LOG.info("设备ID: [{}] 手机设备离线接收到事件通知", deviceid);
+			LOG.info("设备ID: [{}] 手机设备离线接收到事件通知", clientId);
 		
-		final MobileDevStatus mobileDevStatus = new MobileDevStatus(deviceid,
+		final MobileDevStatus mobileDevStatus = new MobileDevStatus(clientId,
 				SessionStatus.ANDROID_DOWN);
 		queue.offer(mobileDevStatus);
 		
 		if (LOG.isDebugEnabled())
 			LOG.debug(
 					"设备ID: [{}] 手机设备离线, 删除在SessionManager map 中的session, 放置到队列中",
-					deviceid);
+					clientId);
 		
 		return true;
 	}
@@ -352,27 +345,27 @@ public class ConnectManager {
 	
 	private class MobileDevStatus {
 		
-		private String			deviceid;
-		private SessionStatus	type;
+		private String			clientId;
+		private SessionStatus	status;
 		
 		/**
 		 * 创建一个新的实例MobileDevStatus.
 		 * 
-		 * @param deviceid
-		 * @param type
+		 * @param clientId
+		 * @param status
 		 * @param clientSession
 		 */
-		public MobileDevStatus(String deviceid, SessionStatus type) {
-			this.deviceid = deviceid;
-			this.type = type;
+		public MobileDevStatus(String clientId, SessionStatus status) {
+			this.clientId = clientId;
+			this.status = status;
 		}
 		
-		public String getDeviceid() {
-			return deviceid;
+		public String getClientId() {
+			return clientId;
 		}
 		
-		public SessionStatus getType() {
-			return type;
+		public SessionStatus getStatus() {
+			return status;
 		}
 		
 	}
