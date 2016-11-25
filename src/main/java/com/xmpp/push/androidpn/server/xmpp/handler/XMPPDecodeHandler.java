@@ -51,14 +51,15 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 		CONNECT, STARTEDTLS, TLSCONNECT, AUTHENTICATE, READY, DISCONNECTED;
 	}
 	
-	private final String	serverName;
-	private final SSLConfig	sslConfig;
-	private Status			status;
-	private TLSPolicy		tlsPolicy		= TLSPolicy.OPTIONAL;
-	private boolean			starttls		= true;
-	private boolean			authed			= false;
-	private SSLEngine		sslEngine;
-	private ConnectManager	connectManager	= ConnectManager.getInstance();
+	private final String		serverName;
+	private final SSLConfig		sslConfig;
+	private Status				status;
+	private TLSPolicy			tlsPolicy		= TLSPolicy.OPTIONAL;
+	private boolean				starttls		= true;
+	private boolean				authed			= false;
+	private SSLEngine			sslEngine;
+	private ConnectManager		connectManager	= ConnectManager.getInstance();
+	private final SslHandler	sslHandler;
 	
 	public XMPPDecodeHandler(String serverName, SSLConfig sslConfig) {
 		super();
@@ -76,6 +77,8 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 		// sslEngine.setNeedClientAuth(true);
 		sslEngine.setWantClientAuth(true);
 		
+		// init sslHandler
+		sslHandler = new SslHandler(sslEngine);
 	}
 	
 	@Override
@@ -143,8 +146,7 @@ public class XMPPDecodeHandler extends ChannelInboundHandlerAdapter {
 						channel.writeAndFlush(xml);
 						
 						// add tls handler
-						channel.pipeline().addFirst("tls",
-								new SslHandler(sslEngine));
+						channel.pipeline().addFirst("tls", sslHandler);
 						
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("client start tls ok. channel=[{}]",
