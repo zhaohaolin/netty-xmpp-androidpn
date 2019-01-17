@@ -1,6 +1,6 @@
 /*
  * CopyRight (c) 2012-2015 Hikvision Co, Ltd. All rights reserved. Filename:
- * Test.java Creator: joe.zhao(zhaohaolin@hikvision.com.cn) Create-Date:
+ * Test.java Creator: joe.zhao Create-Date:
  * 下午6:46:16
  */
 package com.xmpp.push.androidpn;
@@ -20,7 +20,7 @@ import com.xmpp.push.androidpn.server.xmpp.session.ConnectManager;
 /**
  * TODO
  * 
- * @author joe.zhao(zhaohaolin@hikvision.com.cn)
+ * @author joe.zhao
  * @version $Id: Test, v 0.1 2015年4月9日 下午6:46:16 Exp $
  */
 public class Test {
@@ -28,12 +28,12 @@ public class Test {
 	private final static String	ip					= "127.0.0.1";
 	private final static int	port				= 8222;
 	
-	private final static String	apiKey				= "1234567890";
-	private final static String	resourceName		= "VideoGo";
+	private final static String	apiKey				= "88888";
+	private final static String	resourceName		= "dddd";
 	private final static String	xmppSslStoreType	= "JKS";
 	private final static String	xmppSslKeystore		= "conf/security/keystore";
-	private final static String	xmppSslKeypass		= "changeit";
-	private final static String	xmppSslTrustpass	= "changeit";
+	private final static String	xmppSslKeypass		= "dddd";
+	private final static String	xmppSslTrustpass	= "dddd";
 	
 	public static void main(String[] args) throws Exception {
 		
