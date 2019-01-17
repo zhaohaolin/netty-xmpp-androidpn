@@ -54,22 +54,6 @@
 		</dependency>
 	</dependencies>
 
-	<distributionManagement>
-
-		<!-- release -->
-		<repository>
-			<id>civil-release</id>
-			<name>civil-release</name>
-			<url>http://maven.hikvision.com.cn/nexus/content/repositories/civil-release/</url>
-		</repository>
-
-		<!-- snapshot -->
-		<snapshotRepository>
-			<id>civil-snapshot</id>
-			<name>civil-snapshot</name>
-			<url>http://maven.hikvision.com.cn/nexus/content/repositories/civil-snapshot/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<build>
 		<plugins>
@@ -94,7 +78,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Built-By>joe.zhao(zhaohaolin@hikvision.com.cn)</Built-By>
+							<Built-By>joe.zhao</Built-By>
 							<Built-At>${maven.build.timestamp}</Built-At>
 							<Specification-Title>${project.artifactId}</Specification-Title>
 							<Specification-Version>${project.version}</Specification-Version>
@@ -115,7 +99,7 @@
 				<configuration>
 					<archive>
 						<manifestEntries>
-							<Built-By>joe.zhao(zhaohaolin@hikvision.com.cn)</Built-By>
+							<Built-By>joe.zhao</Built-By>
 							<Built-At>${maven.build.timestamp}</Built-At>
 							<Specification-Title>${project.artifactId}</Specification-Title>
 							<Specification-Version>${project.version}</Specification-Version>
@@ -145,7 +129,7 @@
 					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
 					<archive>
 						<manifestEntries>
-							<Built-By>joe.zhao(zhaohaolin@hikvision.com.cn)</Built-By>
+							<Built-By>joe.zhao</Built-By>
 							<Built-At>${maven.build.timestamp}</Built-At>
 							<Specification-Title>${project.artifactId}</Specification-Title>
 							<Specification-Version>${project.version}</Specification-Version>
