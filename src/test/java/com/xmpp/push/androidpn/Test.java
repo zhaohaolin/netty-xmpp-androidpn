@@ -1,5 +1,5 @@
 /*
- * CopyRight (c) 2012-2015 Hikvision Co, Ltd. All rights reserved. Filename:
+ * 
  * Test.java Creator: joe.zhao Create-Date:
  * 下午6:46:16
  */
